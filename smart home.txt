@@ -1,0 +1,295 @@
+// Composite pattern 
+// Base Component
+public interface SmartDevice {
+    void turnOn();
+    void turnOff();
+    String getDescription();
+}
+
+// Leaf Node - Light
+public class Light implements SmartDevice {
+    private String name;
+    
+    public Light(String name) {
+        this.name = name;
+    }
+    
+    @Override
+    public void turnOn() {
+        System.out.println(name + " light is ON.");
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println(name + " light is OFF.");
+    }
+
+    @Override
+    public String getDescription() {
+        return "Light: " + name;
+    }
+}
+
+// Leaf Node - Thermostat
+public class Thermostat implements SmartDevice {
+    private String name;
+    
+    public Thermostat(String name) {
+        this.name = name;
+    }
+    
+    @Override
+    public void turnOn() {
+        System.out.println(name + " thermostat is ON.");
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println(name + " thermostat is OFF.");
+    }
+
+    @Override
+    public String getDescription() {
+        return "Thermostat: " + name;
+    }
+}
+
+// Composite Node - Room or Floor
+import java.util.ArrayList;
+import java.util.List;
+
+public class CompositeDevice implements SmartDevice {
+    private String name;
+    private List<SmartDevice> devices = new ArrayList<>();
+
+    public CompositeDevice(String name) {
+        this.name = name;
+    }
+
+    public void addDevice(SmartDevice device) {
+        devices.add(device);
+    }
+
+    public void removeDevice(SmartDevice device) {
+        devices.remove(device);
+    }
+
+    @Override
+    public void turnOn() {
+        System.out.println(name + " is ON.");
+        for (SmartDevice device : devices) {
+            device.turnOn();
+        }
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println(name + " is OFF.");
+        for (SmartDevice device : devices) {
+            device.turnOff();
+        }
+    }
+
+    @Override
+    public String getDescription() {
+        StringBuilder description = new StringBuilder("Composite Device: " + name + " contains: ");
+        for (SmartDevice device : devices) {
+            description.append(device.getDescription()).append(", ");
+        }
+        return description.toString();
+    }
+}
+// Decorator pattern 
+// Base Decorator
+public abstract class DeviceDecorator implements SmartDevice {
+    protected SmartDevice device;
+
+    public DeviceDecorator(SmartDevice device) {
+        this.device = device;
+    }
+
+    @Override
+    public void turnOn() {
+        device.turnOn();
+    }
+
+    @Override
+    public void turnOff() {
+        device.turnOff();
+    }
+
+    @Override
+    public String getDescription() {
+        return device.getDescription();
+    }
+}
+
+// Scheduling Decorator
+public class ScheduledOperationDecorator extends DeviceDecorator {
+    private String schedule;
+
+    public ScheduledOperationDecorator(SmartDevice device, String schedule) {
+        super(device);
+        this.schedule = schedule;
+    }
+
+    @Override
+    public void turnOn() {
+        System.out.println("Scheduled operation: " + schedule);
+        super.turnOn();
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println("Scheduled operation: " + schedule);
+        super.turnOff();
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + ", Schedule: " + schedule;
+    }
+}
+
+// Power Saving Mode Decorator
+public class PowerSavingModeDecorator extends DeviceDecorator {
+
+    public PowerSavingModeDecorator(SmartDevice device) {
+        super(device);
+    }
+
+    @Override
+    public void turnOn() {
+        System.out.println("Power Saving Mode enabled.");
+        super.turnOn();
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println("Power Saving Mode enabled.");
+        super.turnOff();
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + ", Power Saving Mode";
+    }
+}
+// Abstarct Factory pattern 
+// Abstract Factory
+public interface SmartHomeFactory {
+    SmartDevice createLight(String name);
+    SmartDevice createThermostat(String name);
+}
+
+// Basic Factory
+public class BasicSmartHomeFactory implements SmartHomeFactory {
+    @Override
+    public SmartDevice createLight(String name) {
+        return new Light(name);
+    }
+
+    @Override
+    public SmartDevice createThermostat(String name) {
+        return new Thermostat(name);
+    }
+}
+
+// Advanced Factory
+public class AdvancedSmartHomeFactory implements SmartHomeFactory {
+    @Override
+    public SmartDevice createLight(String name) {
+        return new Light(name); // Could be advanced Light with additional features
+    }
+
+    @Override
+    public SmartDevice createThermostat(String name) {
+        return new Thermostat(name); // Could be advanced Thermostat with AI features
+    }
+}
+// Facade pattern 
+public class SmartHomeController {
+    private SmartDevice livingRoomLight;
+    private SmartDevice bedroomThermostat;
+    private SmartDevice kitchenLight;
+
+    public SmartHomeController(SmartHomeFactory factory) {
+        this.livingRoomLight = factory.createLight("Living Room");
+        this.bedroomThermostat = factory.createThermostat("Bedroom");
+        this.kitchenLight = factory.createLight("Kitchen");
+    }
+
+    public void turnAllLightsOn() {
+        livingRoomLight.turnOn();
+        kitchenLight.turnOn();
+    }
+
+    public void setGlobalTemperature(int temperature) {
+        System.out.println("Setting global temperature to " + temperature + "°C.");
+        // Here, we could call all thermostats to adjust the temperature
+        bedroomThermostat.turnOn();
+    }
+
+    public void getSystemStatusReport() {
+        System.out.println(livingRoomLight.getDescription());
+        System.out.println(bedroomThermostat.getDescription());
+        System.out.println(kitchenLight.getDescription());
+    }
+}
+// Adapter pattern 
+// External Weather API (legacy system)
+class ExternalWeatherAPI {
+    public double getCurrentTemperature() {
+        return 22.5; // Let's assume this is a temperature reading from an external service.
+    }
+}
+
+// Adapter for integrating external API
+public class WeatherAdapter implements SmartDevice {
+    private ExternalWeatherAPI externalWeatherAPI;
+
+    public WeatherAdapter(ExternalWeatherAPI externalWeatherAPI) {
+        this.externalWeatherAPI = externalWeatherAPI;
+    }
+
+    @Override
+    public void turnOn() {
+        System.out.println("External temperature is: " + externalWeatherAPI.getCurrentTemperature() + "°C");
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println("Weather integration turned off.");
+    }
+
+    @Override
+    public String getDescription() {
+        return "Weather API Integration";
+    }
+}
+// DEmo version 
+public class Main {
+    public static void main(String[] args) {
+        // Factory for creating devices
+        SmartHomeFactory factory = new BasicSmartHomeFactory();
+        
+        // Create SmartHomeController (Facade)
+        SmartHomeController controller = new SmartHomeController(factory);
+
+        // Turn on all lights and adjust global temperature
+        controller.turnAllLightsOn();
+        controller.setGlobalTemperature(23);
+
+        // Adding a Weather API adapter
+        ExternalWeatherAPI weatherAPI = new ExternalWeatherAPI();
+        SmartDevice weatherDevice = new WeatherAdapter(weatherAPI);
+        weatherDevice.turnOn();
+        
+        // Decorating devices with additional functionalities
+        SmartDevice decoratedLight = new ScheduledOperationDecorator(factory.createLight("Living Room"), "7 AM");
+        decoratedLight.turnOn();
+        
+        // Display system status
+        controller.getSystemStatusReport();
+    }
+}

@@ -1,0 +1,140 @@
+public interface PaymentMethod {
+    boolean processPayment(double amount);
+}
+// CreditCardPayment
+public class CreditCardPayment implements PaymentMethod {
+    @Override
+    public boolean processPayment(double amount) {
+        // Simulating a credit card payment process
+        System.out.println("Processing Credit Card Payment of $" + amount);
+        return true; // Assume the payment is successful
+    }
+}
+
+// PayPalPayment
+public class PayPalPayment implements PaymentMethod {
+    @Override
+    public boolean processPayment(double amount) {
+        // Simulating a PayPal payment process
+        System.out.println("Processing PayPal Payment of $" + amount);
+        return true; // Assume the payment is successful
+    }
+}
+
+// CryptoPayment
+public class CryptoPayment implements PaymentMethod {
+    @Override
+    public boolean processPayment(double amount) {
+        // Simulating a cryptocurrency payment process
+        System.out.println("Processing Crypto Payment of $" + amount);
+        return true; // Assume the payment is successful
+    }
+}
+public class PaymentFactory {
+    public static PaymentMethod createPaymentMethod(String method) {
+        switch (method.toLowerCase()) {
+            case "creditcard":
+                return new CreditCardPayment();
+            case "paypal":
+                return new PayPalPayment();
+            case "crypto":
+                return new CryptoPayment();
+            default:
+                throw new IllegalArgumentException("Unknown payment method");
+        }
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+// Transaction class to hold transaction details
+class Transaction {
+    private String method;
+    private double amount;
+    private String status;
+
+    public Transaction(String method, double amount, String status) {
+        this.method = method;
+        this.amount = amount;
+        this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "Payment Method: " + method + ", Amount: $" + amount + ", Status: " + status;
+    }
+}
+
+// Transaction Manager for logging transactions
+public class TransactionManager {
+    private List<Transaction> transactionHistory = new ArrayList<>();
+
+    public void logTransaction(String method, double amount, String status) {
+        transactionHistory.add(new Transaction(method, amount, status));
+    }
+
+    public void printTransactionHistory() {
+        System.out.println("\nTransaction History:");
+        for (Transaction transaction : transactionHistory) {
+            System.out.println(transaction);
+        }
+    }
+}
+// Legacy CreditCard API
+class LegacyCreditCardService {
+    public boolean processCreditCard(double amount) {
+        // Simulating legacy system credit card processing
+        System.out.println("Legacy Credit Card API: Processing payment of $" + amount);
+        return true;
+    }
+}
+
+// Adapter to integrate LegacyCreditCardService with PaymentMethod interface
+public class CreditCardAdapter implements PaymentMethod {
+    private LegacyCreditCardService legacyService;
+
+    public CreditCardAdapter(LegacyCreditCardService legacyService) {
+        this.legacyService = legacyService;
+    }
+
+    @Override
+    public boolean processPayment(double amount) {
+        return legacyService.processCreditCard(amount);
+    }
+}
+// Demo version
+import java.util.Scanner;
+
+public class PaymentGatewaySimulator {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        TransactionManager transactionManager = new TransactionManager();
+
+        System.out.print("Select payment method (creditcard, paypal, crypto): ");
+        String method = scanner.nextLine();
+
+        // Create payment method using Factory Method
+        PaymentMethod paymentMethod = PaymentFactory.createPaymentMethod(method);
+
+        // Simulate payment process
+        System.out.print("Enter amount to pay: $");
+        double amount = scanner.nextDouble();
+
+        // Process payment
+        boolean success = paymentMethod.processPayment(amount);
+        String status = success ? "Completed" : "Failed";
+
+        // Log transaction
+        transactionManager.logTransaction(method, amount, status);
+
+        // Print transaction history
+        transactionManager.printTransactionHistory();
+
+        // Adapter example: Integrating Legacy Credit Card System
+        System.out.println("\nTesting Adapter with Legacy Credit Card API:");
+        LegacyCreditCardService legacyService = new LegacyCreditCardService();
+        PaymentMethod legacyPayment = new CreditCardAdapter(legacyService);
+        legacyPayment.processPayment(amount);  // Using adapter to process payment
+    }
+}
